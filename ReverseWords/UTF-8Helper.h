@@ -3,8 +3,19 @@
 #include <bit>
 #include "ReverseBytes.h"
 
-using Byte = uint8_t;
 #define Max_UTF8_Bytes 4
+#define u8out(bp) (uint8_t*)(bp)
+using Byte = char8_t;
+
+// to avoid having to always cast Byte* to uint8_t*
+inline void reverseBytes(Byte* bytePtr, size_t length)
+{
+    reverseBytes((uint8_t*)bytePtr, length);
+}
+
+
+
+
 
 int UTF8size(const Byte& leadbyte)
 {
@@ -57,8 +68,35 @@ struct UTF8char
         // check for little endian, we will need to swap the bytes
         if constexpr (std::endian::native == std::endian::little)
         {
-            reverseBytes(bytes, 4);
+            reverseBytes((uint8_t*)bytes, 4);
         }
         size = UTF8size(bytes[0]);
     }
 };
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+void turnOnUTF8Console()
+{
+#ifdef _WIN32
+    if (!SetConsoleOutputCP(CP_UTF8))
+    {
+        std::cerr << "Failed to set Console output to UTF-8\n";
+    }
+    // enable virtual terminal processing for rentering
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut != INVALID_HANDLE_VALUE)
+    {
+        DWORD mode = 0;
+        if (GetConsoleMode(hOut, &mode))
+        {
+            mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT;
+            SetConsoleMode(hOut, mode);
+        }
+    }
+    SetConsoleCP(CP_UTF8);
+#else
+#endif
+}

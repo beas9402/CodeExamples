@@ -1,25 +1,22 @@
 #pragma once
 #include <cstdint>
 
-using Byte = uint8_t; 
-
-void reverseBytes(Byte* bytePtr, int length=0)
+inline void reverseBytes(uint8_t* bytePtr, size_t length)
 {
-    if (length == 0)
+    // only swap if at least 2 bytes
+    if (length >= 2)
     {
-        length = (int)strlen((char *)bytePtr);
-    }
+        static uint8_t swap;
+        size_t left = 0;
+        size_t right = length - 1;
 
-    static Byte swap;
-    int left = 0;
-    int right = length - 1;
-
-    while (left < right)
-    {
-        swap = bytePtr[left];
-        bytePtr[left] = bytePtr[right];
-        bytePtr[right] = swap;
-        left++;
-        right--;
+        while (left < right)
+        {
+            swap = bytePtr[left];
+            bytePtr[left] = bytePtr[right];
+            bytePtr[right] = swap;
+            left++;
+            right--;
+        }
     }
 }
